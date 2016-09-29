@@ -150,6 +150,9 @@ spec:
         configMap:
           name: grafana-import-dashboards
 ---
+# based on the content created by:
+# kubectl create configmap prometheus-alert --from-file=manifests/prometheus-alert-configmap --output yaml > manifests/prometheus-alert-configmap.yaml
+
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -165,13 +168,14 @@ data:
       resolve_timeout: 5m
 
       # The smarthost and SMTP sender used for mail notifications.
-      smtp_smarthost: 'smtp.zmail300.cn:25'
-      smtp_from: 'xuxiaoping@300.cn'
-      smtp_auth_username: 'xuxiaoping@300.cn'
-      smtp_auth_password: 'Something.'
+      smtp_smarthost: 'smtp.localhost:25'
+      smtp_from: 'alertmanager@example.org'
+      smtp_auth_username: 'alertmanager'
+      smtp_auth_password: 'password'
+      smtp_require_tls: true
 
       # The API URL to use for Slack notifications.
-      slack_api_url: 'https://hooks.slack.com/services/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'
+      slack_api_url: 'global.slack_api_url'
 
       # # The auth token for Hipchat.
       # hipchat_auth_token: '1234556789'
@@ -258,7 +262,7 @@ data:
 
     - name: 'email_alert'
       email_configs:
-      - to: 'xuxiaoping@300.cn'
+      - to: 'opsteam@example.org'
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -328,11 +332,24 @@ metadata:
     app: prometheus
     component: core
 data:
+  prometheus-alert.rules: |
+    # Alert for any instance that is unreachable for >5 minutes.
+    ALERT InstanceDown
+      IF up == 0
+      FOR 5m
+      LABELS { severity = "email" }
+      ANNOTATIONS {
+        summary = "Instance {{ $labels.instance }} down",
+        description = "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.",
+      }
   prometheus.yml: |
     global:
       scrape_interval: 10s
       scrape_timeout: 10s
       evaluation_interval: 10s
+
+    rule_files:
+      - '/etc/prometheus/prometheus-alert.rules'
 
     scrape_configs:
 
@@ -479,6 +496,7 @@ spec:
           - '-storage.local.retention=6h'
           - '-storage.local.memory-chunks=500000'
           - '-config.file=/etc/prometheus/prometheus.yml'
+          - '-alertmanager.url=http://alertmanager:9093'
         ports:
         - name: webui
           containerPort: 9090
