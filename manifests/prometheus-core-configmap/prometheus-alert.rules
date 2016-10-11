@@ -7,3 +7,98 @@ ALERT InstanceDown
     summary = "Instance {{ $labels.instance }} down",
     description = "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.",
   }
+
+ALERT node_cpu_threshold_exceeded  
+  IF 100 * node_load5 > 90
+  LABELS { severity = "email" }
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.instance }} CPU usage is dangerously high",
+    description = "This device's CPU usage has exceeded the threshold with a value of {{ $value }}.",
+  }
+
+ALERT node_memory_threshold_exceeded  
+  IF (node_memory_MemFree+node_memory_Buffers+node_memory_Cached) / node_memory_MemTotal < 0.1
+  LABELS { severity = "email" }
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.instance }} MEM usage is dangerously high",
+    description = "This device's MEM usage has exceeded the threshold with a value of {{ $value }}.",
+  }
+
+ALERT node_fs_threshold_exceeded
+  IF node_filesystem_free{fstype="rootfs"} / node_filesystem_size{fstype="rootfs"} < 0.2
+  LABELS { severity = "email" }
+  ANNOTATIONS {
+    summary = "Node filesystem usage is high",
+    description = "Node {{ $labels.instance }}'s filesystem {{ $labels.mountpoint }} has less than 20% disk space remaining."
+  }
+
+ALERT container_cpu_threshold_exceeded  
+  IF rate(container_cpu_user_seconds_total{image!=""}[5m]) * 100 > 90
+  LABELS { severity = "email" }
+  ANNOTATIONS {
+    summary = "Instance {{ $labels.kubernetes_container_name }} CPU usage is dangerously high",
+    description = "This device's CPU usage has exceeded the threshold with a value of {{ $value }}.",
+  }
+
+ALERT FdExhaustionClose
+  IF predict_linear(instance:fd_utilization[1h], 3600 * 4) > 1
+  FOR 10m
+  LABELS { severity = "email" }
+  ANNOTATIONS {
+    summary = "file descriptors soon exhausted",
+    description = "{{ $labels.job }} instance {{ $labels.instance }} will exhaust in file descriptors soon",
+  }
+
+ALERT ContainerReboot
+  IF increase(container_last_seen{container_label_io_kubernetes_container_hash!=""}[30s]) < 25
+  LABELS { severity = "email" }
+  ANNOTATIONS {
+    summary = "Container reboot",
+    description = "{{ $labels.container_label_io_kubernetes_pod_name }}刚刚发生重启， 已经重启过{{ $labels.container_label_io_kubernetes_container_restartCount }}次."
+  }
+
+# #etcd monitor
+# ALERT HighNumberOfFailedHTTPRequests
+# IF sum by(method) (rate(etcd_http_failed_total{job="etcd"}[5m]))
+#   / sum by(method) (rate(etcd_http_received_total{job="etcd"}[5m])) > 0.01
+# FOR 10m
+# LABELS {
+#   severity = "warning"
+# }
+# ANNOTATIONS {
+#   summary = "a high number of HTTP requests are failing",
+#   description = "{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}",
+# }
+
+# ALERT HTTPRequestsSlow
+# IF histogram_quantile(0.99, rate(etcd_http_successful_duration_seconds_bucket[5m])) > 0.15
+# FOR 10m
+# LABELS {
+#   severity = "warning"
+# }
+# ANNOTATIONS {
+#   summary = "slow HTTP requests",
+#   description = "on ectd instance {{ $labels.instance }} HTTP requests to {{ $label.method }} are slow",
+# }
+
+# ALERT etcdNoLeader
+# IF etcd_server_has_leader{job="etcd"} == 0
+# FOR 1m
+# LABELS {
+#   severity = "critical"
+# }
+# ANNOTATIONS {
+#   summary = "etcd node has no leader",
+#   description = "etcd node {{ $labels.instance }} has no leader",
+# }
+
+# ALERT InsufficientPeers
+# IF count(up{job="etcd"} == 0) > (count(up{job="etcd"}) / 2 - 1)
+# FOR 3m
+# LABELS {
+#   severity = "critical"
+# }
+# ANNOTATIONS {
+#   summary = "etcd cluster small",
+#   description = "If one more etcd peer goes down the cluster will be unavailable",
+# }

@@ -1,26 +1,17 @@
-# based on the content created by:
-# kubectl create configmap prometheus-alert --from-file=manifests/prometheus-alert-configmap --output yaml > manifests/prometheus-alert-configmap.yaml
-
-kind: ConfigMap
 apiVersion: v1
-metadata:
-  name: prometheus-alert
-  labels:
-    app: prometheus
-    component: alert
 data:
-  config.yml: |-
+  alertmanager.yml: |
     global:
       # ResolveTimeout is the time after which an alert is declared resolved
       # if it has not been updated.
       resolve_timeout: 5m
 
       # The smarthost and SMTP sender used for mail notifications.
-      smtp_smarthost: 'smtp.localhost:25'
-      smtp_from: 'alertmanager@example.org'
-      smtp_auth_username: 'alertmanager'
-      smtp_auth_password: 'password'
-      smtp_require_tls: true
+      smtp_smarthost: 'smtp.zmail300.cn:25'
+      smtp_from: 'xuxiaoping@300.cn'
+      smtp_auth_username: 'xuxiaoping@300.cn'
+      smtp_auth_password: '*******'
+      smtp_require_tls: false
 
       # The API URL to use for Slack notifications.
       slack_api_url: 'global.slack_api_url'
@@ -110,4 +101,12 @@ data:
 
     - name: 'email_alert'
       email_configs:
-      - to: 'opsteam@example.org'
+      - to: 'xiaoping378@163.com'
+kind: ConfigMap
+metadata:
+  creationTimestamp: 2016-10-10T10:07:07Z
+  name: prometheus-alert
+  namespace: default
+  resourceVersion: "557851"
+  selfLink: /api/v1/namespaces/default/configmaps/prometheus-alert
+  uid: 4d4d575d-8ed1-11e6-8cdb-00232481d98f
