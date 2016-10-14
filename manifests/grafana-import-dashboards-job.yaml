@@ -16,6 +16,7 @@ spec:
       containers:
       - name: grafana-import-dashboards
         image: docker
+        imagePullPolicy: IfNotPresent
         command: ["/bin/sh", "-c"]
         workingDir: /opt/grafana-import-dashboards
         args:

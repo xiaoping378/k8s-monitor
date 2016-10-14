@@ -32,7 +32,15 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /etc/prometheus
+        - name: data-volume
+          mountPath: /prometheus
+      # nodeSelector:
+      #   kubernetes.io/hostname: 192.168.1.110
       volumes:
       - name: config-volume
         configMap:
           name: prometheus-core
+      - name: data-volume
+        hostPath:
+          # directory location on host
+          path: /prometheusData
