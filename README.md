@@ -96,9 +96,9 @@ done
 ## create configmap file
 
 ```bash
-kubectl create configmap prometheus-core --from-file=manifests/prometheus-core-configmap --output yaml > manifests/prometheus-core-configmap.yaml
-kubectl create configmap grafana-import-dashboards --from-file=manifests/grafana-import-dashboards-configmap --output yaml > manifests/grafana-import-dashboards-configmap.yaml
-kubectl create configmap prometheus-alert --from-file=manifests/prometheus-alert-configmap --output yaml > manifests/prometheus-alert-configmap.yaml
+kubectl create configmap prometheus-core --from-file=manifests/prometheus-core-configmap --output yaml --dry-run > manifests/prometheus-core-configmap.yaml
+kubectl create configmap grafana-import-dashboards --from-file=manifests/grafana-import-dashboards-configmap --output yaml --dry-run > manifests/grafana-import-dashboards-configmap.yaml
+kubectl create configmap prometheus-alert --from-file=manifests/prometheus-alert-configmap --output yaml --dry-run > manifests/prometheus-alert-configmap.yaml
 ```
 
 ## Credits
