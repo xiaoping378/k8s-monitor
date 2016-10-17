@@ -19,7 +19,7 @@ spec:
       - name: alertmanager
         image: prom/alertmanager:v0.4.2
         args:
-          - '-config.file=/etc/alertmanager/config.yml'
+          - '-config.file=/etc/alertmanager/alertmanager.yml'
           - '-storage.path=/alertmanager'
         ports:
         - name: alertmanager

@@ -16,7 +16,7 @@ spec:
         component: core
     spec:
       containers:
-        - image: grafana/grafana:3.1.1
+        - image: xiaoping378/grafana-cn:3.1.1
           name: grafana-core
           # env:
           resources:
@@ -27,6 +27,9 @@ spec:
             requests:
               cpu: 100m
               memory: 100Mi
+          ports:
+            - name: grafana
+              containerPort: 3000
           env:
             # This variable is required to setup templates in Grafana.
               # The following env variables are required to make Grafana accessible via
@@ -44,9 +47,12 @@ spec:
           volumeMounts:
           - name: grafana-persistent-storage
             mountPath: /var
+      # nodeSelector:
+      #   kubernetes.io/hostname: 192.168.1.110
       volumes:
       - name: grafana-persistent-storage
-        emptyDir: {}
+        hostPath:
+          path: /grafanaData
 ---
 apiVersion: v1
 kind: Service
@@ -112,6 +118,7 @@ spec:
       containers:
       - name: grafana-import-dashboards
         image: docker
+        imagePullPolicy: IfNotPresent
         command: ["/bin/sh", "-c"]
         workingDir: /opt/grafana-import-dashboards
         args:
@@ -284,7 +291,7 @@ spec:
       - name: alertmanager
         image: prom/alertmanager:v0.4.2
         args:
-          - '-config.file=/etc/alertmanager/config.yml'
+          - '-config.file=/etc/alertmanager/alertmanager.yml'
           - '-storage.path=/alertmanager'
         ports:
         - name: alertmanager
@@ -617,10 +624,18 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /etc/prometheus
+        - name: data-volume
+          mountPath: /prometheus
+      # nodeSelector:
+      #   kubernetes.io/hostname: 192.168.1.110
       volumes:
       - name: config-volume
         configMap:
           name: prometheus-core
+      - name: data-volume
+        hostPath:
+          # directory location on host
+          path: /prometheusData
 ---
 apiVersion: v1
 kind: Service

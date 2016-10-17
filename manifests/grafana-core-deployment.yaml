@@ -14,7 +14,7 @@ spec:
         component: core
     spec:
       containers:
-        - image: grafana/grafana:3.1.1
+        - image: xiaoping378/grafana-cn:3.1.1
           name: grafana-core
           # env:
           resources:
@@ -25,6 +25,9 @@ spec:
             requests:
               cpu: 100m
               memory: 100Mi
+          ports:
+            - name: grafana
+              containerPort: 3000
           env:
             # This variable is required to setup templates in Grafana.
               # The following env variables are required to make Grafana accessible via
