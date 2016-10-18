@@ -399,13 +399,20 @@ data:
     < 25\n  LABELS { severity = \"email\" }\n  ANNOTATIONS {\n    summary = \"Container
     reboot\",\n    description = \"{{ $labels.container_label_io_kubernetes_pod_name
     }}刚刚发生重启， 已经重启过{{ $labels.container_label_io_kubernetes_container_restartCount
-    }}次.\"\n  }\n\n# #etcd monitor\n# ALERT HighNumberOfFailedHTTPRequests\n# IF sum
-    by(method) (rate(etcd_http_failed_total{job=\"etcd\"}[5m]))\n#   / sum by(method)
-    (rate(etcd_http_received_total{job=\"etcd\"}[5m])) > 0.01\n# FOR 10m\n# LABELS
-    {\n#   severity = \"warning\"\n# }\n# ANNOTATIONS {\n#   summary = \"a high number
-    of HTTP requests are failing\",\n#   description = \"{{ $value }}% of requests
-    for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}\",\n#
-    }\n\n# ALERT HTTPRequestsSlow\n# IF histogram_quantile(0.99, rate(etcd_http_successful_duration_seconds_bucket[5m]))
+    }}次.\"\n  }\n\nALERT PodRestartingTooMuch\n  IF          rate(kube_pod_container_status_restarts[1m])
+    > 1/(5*60)\n  FOR         1h\n  LABELS      { severity=\"warning\" }\n  ANNOTATIONS
+    {\n    summary = \"Pod {{$labels.namespace}}/{{$label.pod}} restarting too much.\",\n
+    \   description = \"Pod {{$labels.namespace}}/{{$label.pod}} restarting too much.\",\n
+    \ }\n\nALERT PodSlowToLaunch\n  IF          rate(kubelet_pod_start_latency_microseconds{quantile=\"0.99\"}[1m])
+    > 5\n  FOR         1h\n  LABELS      { severity=\"warning\" }\n  ANNOTATIONS {\n
+    \   summary = \"Pods are slow to launch.\",\n    description = \"Pods are taking
+    longer than 5 milliseconds to launch.\",\n  }\n\n\n# #etcd monitor\n# ALERT HighNumberOfFailedHTTPRequests\n#
+    IF sum by(method) (rate(etcd_http_failed_total{job=\"etcd\"}[5m]))\n#   / sum
+    by(method) (rate(etcd_http_received_total{job=\"etcd\"}[5m])) > 0.01\n# FOR 10m\n#
+    LABELS {\n#   severity = \"warning\"\n# }\n# ANNOTATIONS {\n#   summary = \"a
+    high number of HTTP requests are failing\",\n#   description = \"{{ $value }}%
+    of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance
+    }}\",\n# }\n\n# ALERT HTTPRequestsSlow\n# IF histogram_quantile(0.99, rate(etcd_http_successful_duration_seconds_bucket[5m]))
     > 0.15\n# FOR 10m\n# LABELS {\n#   severity = \"warning\"\n# }\n# ANNOTATIONS
     {\n#   summary = \"slow HTTP requests\",\n#   description = \"on ectd instance
     {{ $labels.instance }} HTTP requests to {{ $label.method }} are slow\",\n# }\n\n#
@@ -624,12 +631,8 @@ data:
           target_label: kubernetes_pod_name
 kind: ConfigMap
 metadata:
-  creationTimestamp: 2016-10-10T10:06:09Z
+  creationTimestamp: null
   name: prometheus-core
-  namespace: default
-  resourceVersion: "557837"
-  selfLink: /api/v1/namespaces/default/configmaps/prometheus-core
-  uid: 2ab3b85f-8ed1-11e6-8cdb-00232481d98f
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment

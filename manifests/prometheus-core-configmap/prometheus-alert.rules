@@ -57,6 +57,25 @@ ALERT ContainerReboot
     description = "{{ $labels.container_label_io_kubernetes_pod_name }}刚刚发生重启， 已经重启过{{ $labels.container_label_io_kubernetes_container_restartCount }}次."
   }
 
+ALERT PodRestartingTooMuch
+  IF          rate(kube_pod_container_status_restarts[1m]) > 1/(5*60)
+  FOR         1h
+  LABELS      { severity="warning" }
+  ANNOTATIONS {
+    summary = "Pod {{$labels.namespace}}/{{$label.pod}} restarting too much.",
+    description = "Pod {{$labels.namespace}}/{{$label.pod}} restarting too much.",
+  }
+
+ALERT PodSlowToLaunch
+  IF          rate(kubelet_pod_start_latency_microseconds{quantile="0.99"}[1m]) > 5
+  FOR         1h
+  LABELS      { severity="warning" }
+  ANNOTATIONS {
+    summary = "Pods are slow to launch.",
+    description = "Pods are taking longer than 5 milliseconds to launch.",
+  }
+
+
 # #etcd monitor
 # ALERT HighNumberOfFailedHTTPRequests
 # IF sum by(method) (rate(etcd_http_failed_total{job="etcd"}[5m]))
