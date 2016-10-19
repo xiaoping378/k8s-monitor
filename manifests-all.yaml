@@ -211,7 +211,9 @@ data:
       smtp_from: 'xuxiaoping@300.cn'
       smtp_auth_username: 'xuxiaoping@300.cn'
       smtp_auth_password: '*******'
-      smtp_require_tls: false
+      # require_tls, don't work in global section. should put it into email config.
+      # refer to https://github.com/prometheus/alertmanager/issues/193
+      # smtp_require_tls: false
 
       # The API URL to use for Slack notifications.
       slack_api_url: 'global.slack_api_url'
@@ -302,14 +304,16 @@ data:
     - name: 'email_alert'
       email_configs:
       - to: 'xiaoping378@163.com'
+        # Will override the global section, have a higher priority.
+        smarthost: 'smtp.zmail300.cn:25'
+        from: 'xuxiaoping2@300.cn'
+        auth_username: 'xuxiaoping2@300.cn'
+        auth_password: '********'
+        require_tls: false
 kind: ConfigMap
 metadata:
-  creationTimestamp: 2016-10-10T10:07:07Z
+  creationTimestamp: null
   name: prometheus-alert
-  namespace: default
-  resourceVersion: "557851"
-  selfLink: /api/v1/namespaces/default/configmaps/prometheus-alert
-  uid: 4d4d575d-8ed1-11e6-8cdb-00232481d98f
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
