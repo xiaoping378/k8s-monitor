@@ -13,7 +13,7 @@ To shut down all components again:
 ```bash
 kubectl delete namespace monitoring
 ```
-本项目依赖的所有docker镜像已打包放在百度云上,所有镜像均可以在docker hub上找到 [下载镜像tar包](http://pan.baidu.com/s/1i58vBE1)
+本项目依赖的所有docker镜像已打包放在百度云上,所有镜像均可以在docker hub上找到 [下载镜像tar包](https://pan.baidu.com/s/1hskbi6o)
 
 ## More Details
 
